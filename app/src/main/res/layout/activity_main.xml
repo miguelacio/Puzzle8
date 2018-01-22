@@ -1,0 +1,59 @@
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        >
+
+        <RelativeLayout
+            android:layout_margin="10dp"
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/layout_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/edittext_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:inputType="textPersonName"
+                    android:hint="Nombre jugador" />
+            </android.support.design.widget.TextInputLayout>
+
+            <TextView
+                android:layout_below="@id/layout_name"
+                android:id="@+id/text_view_config"
+                android:layout_width="match_parent"
+                android:text="Configuración"
+                android:layout_height="wrap_content" />
+
+            <Spinner
+                android:layout_marginTop="10dp"
+                android:layout_below="@id/text_view_config"
+                android:id="@+id/spinner_config"
+                android:layout_marginBottom="10dp"
+                android:spinnerMode="dialog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:text="Guardar"
+                android:id="@+id/button_save"
+                android:background="@color/colorPrimary"
+                android:textColor="@android:color/white"
+                android:layout_below="@id/spinner_config"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+
+
+
+    </RelativeLayout>
