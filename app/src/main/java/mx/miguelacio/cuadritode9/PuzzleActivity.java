@@ -14,10 +14,15 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Node;
+
 import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
 
 import mx.miguelacio.cuadritode9.models.Board;
 import mx.miguelacio.cuadritode9.models.Cell;
+import mx.miguelacio.cuadritode9.models.Puzzle;
 import mx.miguelacio.cuadritode9.utils.AdminSQLiteOpenHelper;
 import mx.miguelacio.cuadritode9.utils.PuzzleAdapter;
 
@@ -35,9 +40,15 @@ public class PuzzleActivity extends AppCompatActivity  {
     PuzzleAdapter gridAdapter;
     int movements = 0;
     TextView textViewMovements, textViewTime;
-    String name, config;
+    String name, config = "Aleatorio";
     int count = 0;
 
+
+    public int dimension = 3;
+
+    // Bottom, left, top, right
+    int[] row = { 1, 0, -1, 0 };
+    int[] col = { 0, -1, 0, 1 };
 
 
     @Override
@@ -50,12 +61,15 @@ public class PuzzleActivity extends AppCompatActivity  {
         textViewTime = findViewById(R.id.text_view_time);
         board.populateArray();
 
+
         gridAdapter = new PuzzleAdapter(board.getCellArrayList(), PuzzleActivity.this);
 
         gridView.setAdapter(gridAdapter);
 
+
         name = getIntent().getStringExtra("name");
         config = getIntent().getStringExtra("config");
+
 
 
         final Handler h = new Handler();
@@ -69,6 +83,9 @@ public class PuzzleActivity extends AppCompatActivity  {
             }
         };
         h.postDelayed(r, 1000);
+
+
+
     }
 
 
@@ -157,7 +174,7 @@ public class PuzzleActivity extends AppCompatActivity  {
 
                textViewMovements.setText("Número de movimientos: " + movements);
 
-               checkIfSolved(board.getCellArrayList(), config);
+               checkIfSolved(board.getCellArrayList());
 
 
            } else {
@@ -170,7 +187,7 @@ public class PuzzleActivity extends AppCompatActivity  {
 
     }
 
-    private void checkIfSolved(ArrayList<Cell> cellArrayList, String config) {
+    private void checkIfSolved(ArrayList<Cell> cellArrayList) {
 
         ArrayList<Cell> forma1 = new ArrayList<>();
 
@@ -340,6 +357,92 @@ public class PuzzleActivity extends AppCompatActivity  {
         }
         return true;
     }
-    
-    
+
+
+    public void solve(int[][] initial, int[][] goal, int x, int y) {
+        PriorityQueue<mx.miguelacio.cuadritode9.models.Node> pq = new PriorityQueue<mx.miguelacio.cuadritode9.models.Node>(1000, (a, b) -> (a.cost + a.level) - (b.cost + b.level));
+        mx.miguelacio.cuadritode9.models.Node root = new mx.miguelacio.cuadritode9.models.Node(initial, x, y, x, y, 0, null);
+        root.cost = calculateCost(initial, goal);
+        pq.add(root);
+
+        while (!pq.isEmpty()) {
+            mx.miguelacio.cuadritode9.models.Node min = pq.poll();
+            if (min.cost == 0) {
+                printPath(min);
+                return;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                if (isSafe(min.x + row[i], min.y + col[i])) {
+                    mx.miguelacio.cuadritode9.models.Node child = new mx.miguelacio.cuadritode9.models.Node(min.matrix, min.x, min.y, min.x + row[i], min.y + col[i], min.level + 1, min);
+                    child.cost = calculateCost(child.matrix, goal);
+                    pq.add(child);
+                }
+            }
+        }
+    }
+
+
+
+    public int calculateCost(int[][] initial, int[][] goal) {
+        int count = 0;
+        int n = initial.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (initial[i][j] != 0 && initial[i][j] != goal[i][j]) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public void printMatrix(int[][] matrix) {
+        for (int[] aMatrix : matrix) {
+            for (int j = 0; j < matrix.length; j++) {
+                System.out.print(aMatrix[j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public boolean isSafe(int x, int y) {
+        return (x >= 0 && x < dimension && y >= 0 && y < dimension);
+    }
+
+    public void printPath(mx.miguelacio.cuadritode9.models.Node root) {
+        if (root == null) {
+            return;
+        }
+        printPath(root.parent);
+        printMatrix(root.matrix);
+        System.out.println();
+    }
+
+    public boolean isSolvable(int[][] matrix) {
+        int count = 0;
+        List<Integer> array = new ArrayList<Integer>();
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix.length; j++) {
+                array.add(matrix[i][j]);
+            }
+        }
+
+        Integer[] anotherArray = new Integer[array.size()];
+        array.toArray(anotherArray);
+
+        for (int i = 0; i < anotherArray.length - 1; i++) {
+            for (int j = i + 1; j < anotherArray.length; j++) {
+                if (anotherArray[i] != 0 && anotherArray[j] != 0 && anotherArray[i] > anotherArray[j]) {
+                    count++;
+                }
+            }
+        }
+
+        return count % 2 == 0;
+    }
+
+
+
 }
